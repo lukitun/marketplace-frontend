@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Hardcoded API URL for production deployment
-const API_URL = 'http://207.180.241.64:5000/api';
+const API_URL = 'https://207.180.241.64/api';
 
 // Create axios instance
 const api = axios.create({

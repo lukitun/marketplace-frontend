@@ -72,7 +72,7 @@ function Home() {
           <div key={post.id} className="post-card">
             {post.image_url && (
               <img
-                src={`http://207.180.241.64:5000${post.image_url}`}
+                src={`https://207.180.241.64${post.image_url}`}
                 alt={post.title}
                 className="post-image"
               />
