@@ -69,6 +69,14 @@ export const postsAPI = {
   getUserPosts: () => api.get('/posts/user/posts'),
 };
 
+// Subscription API
+export const subscriptionAPI = {
+  requestSubscription: (data) => api.post('/subscription/request', data),
+  getUserRequests: () => api.get('/subscription/requests'),
+  getAllRequests: () => api.get('/subscription/admin/requests'),
+  updateRequestStatus: (requestId, data) => api.put(`/subscription/admin/requests/${requestId}`, data),
+};
+
 // Admin API
 export const adminAPI = {
   // Users

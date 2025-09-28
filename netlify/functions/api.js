@@ -1,7 +1,3 @@
-const axios = require('axios');
-
-const API_BASE_URL = 'http://207.180.241.64:8080/api';
-
 exports.handler = async (event, context) => {
   const { httpMethod, path, body, queryStringParameters, headers } = event;
 
@@ -21,6 +17,12 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    // Dynamic import of axios to avoid bundling issues
+    const axios = await import('axios');
+    const axiosInstance = axios.default || axios;
+
+    const API_BASE_URL = 'http://207.180.241.64:8080/api';
+
     // Extract the API path from the Netlify function path
     const apiPath = path.replace('/.netlify/functions/api', '');
     const url = `${API_BASE_URL}${apiPath}`;
@@ -45,13 +47,14 @@ exports.handler = async (event, context) => {
       method: httpMethod.toLowerCase(),
       url: url + queryString,
       headers: backendHeaders,
+      timeout: 10000, // 10 second timeout
     };
 
     if (body && (httpMethod === 'POST' || httpMethod === 'PUT')) {
       config.data = body;
     }
 
-    const response = await axios(config);
+    const response = await axiosInstance(config);
 
     return {
       statusCode: response.status,
@@ -70,7 +73,8 @@ exports.handler = async (event, context) => {
       headers: corsHeaders,
       body: JSON.stringify({
         success: false,
-        message: error.response?.data?.message || 'Server error',
+        message: error.response?.data?.message || error.message || 'Server error',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       }),
     };
   }
