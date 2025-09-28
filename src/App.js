@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 
 // Components
 import Navbar from './components/Navbar';
@@ -22,10 +23,11 @@ import AdminPosts from './pages/AdminPosts';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="App">
-          <Navbar />
-          <Routes>
+      <ToastProvider>
+        <Router>
+          <div className="App">
+            <Navbar />
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -51,6 +53,7 @@ function App() {
           </Routes>
         </div>
       </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 }

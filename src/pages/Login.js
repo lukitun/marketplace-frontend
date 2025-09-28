@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -11,6 +13,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
+  const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,9 +31,12 @@ function Login() {
     const result = await login(formData);
 
     if (result.success) {
+      showSuccess('Login successful! Welcome back.');
       navigate('/');
     } else {
-      setError(result.error || 'Login failed');
+      const errorMessage = result.error || 'Login failed';
+      setError(errorMessage);
+      showError(errorMessage);
     }
     setLoading(false);
   };
@@ -73,7 +79,7 @@ function Login() {
 
           <button
             type="submit"
-            className="btn btn-primary"
+            className={`btn btn-primary ${loading ? 'btn-loading' : ''}`}
             disabled={loading}
             style={{ width: '100%' }}
           >

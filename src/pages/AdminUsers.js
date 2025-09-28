@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../services/api';
+import { useToast } from '../context/ToastContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState({
     duration_months: 1,
     amount: 0,
     send_invoice: false
   });
+
+  const { showSuccess, showError, showInfo } = useToast();
 
   useEffect(() => {
     fetchUsers();
@@ -23,6 +28,7 @@ function AdminUsers() {
       setUsers(response.data.users);
     } catch (error) {
       console.error('Error fetching users:', error);
+      showError('Failed to load users. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -42,26 +48,48 @@ function AdminUsers() {
     if (!selectedUser) return;
 
     try {
+      setProcessing(true);
       const data = {
         is_subscribed: !selectedUser.is_subscribed,
         ...subscriptionData
       };
 
-      await adminAPI.updateUserSubscription(selectedUser.id, data);
+      const response = await adminAPI.updateUserSubscription(selectedUser.id, data);
       setShowModal(false);
       fetchUsers(); // Refresh the list
-      alert(`Subscription ${data.is_subscribed ? 'activated' : 'deactivated'} successfully${data.send_invoice ? ' and invoice sent' : ''}`);
+
+      const action = data.is_subscribed ? 'activated' : 'deactivated';
+      let message = `Subscription ${action} successfully for ${selectedUser.username}`;
+
+      if (response.data.invoice_sent) {
+        message += ' and invoice sent via email';
+        if (response.data.email_preview_url) {
+          showInfo(`${message}. Preview: ${response.data.email_preview_url}`);
+        } else {
+          showSuccess(message);
+        }
+      } else if (data.send_invoice && data.is_subscribed) {
+        showError(`${message}, but failed to send invoice email`);
+      } else {
+        showSuccess(message);
+      }
+
+      // Reset form
+      setSubscriptionData({
+        duration_months: 1,
+        amount: 0,
+        send_invoice: false
+      });
     } catch (error) {
-      alert('Failed to update subscription');
+      console.error('Subscription update error:', error);
+      showError('Failed to update subscription. Please try again.');
+    } finally {
+      setProcessing(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="loading">
-        <div className="spinner"></div>
-      </div>
-    );
+    return <LoadingSpinner text="Loading users..." />;
   }
 
   return (
@@ -192,10 +220,18 @@ function AdminUsers() {
             )}
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button onClick={handleUpdateSubscription} className="btn btn-primary">
-                Confirm
+              <button
+                onClick={handleUpdateSubscription}
+                className={`btn btn-primary ${processing ? 'btn-loading' : ''}`}
+                disabled={processing}
+              >
+                {processing ? 'Processing...' : 'Confirm'}
               </button>
-              <button onClick={() => setShowModal(false)} className="btn btn-danger">
+              <button
+                onClick={() => setShowModal(false)}
+                className="btn btn-danger"
+                disabled={processing}
+              >
                 Cancel
               </button>
             </div>
