@@ -63,7 +63,7 @@ function MyPosts() {
             <div key={post.id} className="post-card">
               {post.image_url && (
                 <img
-                  src={`http://207.180.241.64:8080${post.image_url}`}
+                  src={`/.netlify/functions/image-proxy${post.image_url}`}
                   alt={post.title}
                   className="post-image"
                 />

@@ -9,6 +9,9 @@
     "axios": "^1.4.0",
     "react-scripts": "5.0.1"
   },
+  "devDependencies": {
+    "netlify-lambda": "^2.0.15"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",

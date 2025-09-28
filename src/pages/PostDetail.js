@@ -72,7 +72,7 @@ function PostDetail() {
 
         {post.image_url && (
           <img
-            src={`http://207.180.241.64:8080${post.image_url}`}
+            src={`/.netlify/functions/image-proxy${post.image_url}`}
             alt={post.title}
             style={{ width: '100%', maxHeight: '500px', objectFit: 'cover', marginBottom: '1rem' }}
           />

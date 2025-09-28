@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// Hardcoded API URL for production deployment
-const API_URL = 'http://207.180.241.64:8080/api';
+// Use Netlify Functions as proxy to avoid mixed content issues
+const API_URL = process.env.NODE_ENV === 'production'
+  ? '/.netlify/functions/api'
+  : 'http://localhost:5000/api';
 
 // Create axios instance
 const api = axios.create({
