@@ -1,9 +1,16 @@
 import axios from 'axios';
 
 // Use Netlify Functions as proxy to avoid mixed content issues
-const API_URL = process.env.NODE_ENV === 'production'
-  ? '/.netlify/functions/api'
-  : 'http://localhost:5000/api';
+const getApiUrl = () => {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('netlify')) {
+    return '/.netlify/functions/api';
+  }
+  return process.env.NODE_ENV === 'production'
+    ? '/.netlify/functions/api'
+    : 'http://localhost:5000/api';
+};
+
+const API_URL = getApiUrl();
 
 // Create axios instance
 const api = axios.create({
