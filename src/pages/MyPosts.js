@@ -63,7 +63,7 @@ function MyPosts() {
             <div key={post.id} className="post-card">
               {post.image_url && (
                 <img
-                  src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${post.image_url}`}
+                  src={`http://207.180.241.64:5000${post.image_url}`}
                   alt={post.title}
                   className="post-image"
                 />
