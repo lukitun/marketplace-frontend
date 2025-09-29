@@ -17,6 +17,7 @@ function CreatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
 
     if (!title || !content) {
       setError('Title and content are required');
@@ -28,6 +29,7 @@ function CreatePost() {
 
     try {
       const postData = { title, content, contact_info: contactInfo };
+      console.log('Sending post data:', postData);
       const response = await postsAPI.createPost(postData);
 
       showSuccess('Post created successfully!');
@@ -52,7 +54,7 @@ function CreatePost() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} encType="application/json">
           <div className="form-group">
             <label className="form-label">Title*</label>
             <input
