@@ -21,7 +21,7 @@ const limiter = rateLimit({
 
 // Middleware
 app.use(cors({
-    origin: ['https://frontendmarket.netlify.app', 'http://localhost:3000'],
+    origin: '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

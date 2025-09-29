@@ -1,13 +1,8 @@
 import axios from 'axios';
 
-// Use Netlify Functions as proxy to avoid mixed content issues
+// Connect directly to backend
 const getApiUrl = () => {
-  if (typeof window !== 'undefined' && window.location.hostname.includes('netlify')) {
-    return '/.netlify/functions/api';
-  }
-  return process.env.NODE_ENV === 'production'
-    ? '/.netlify/functions/api'
-    : 'http://localhost:5000/api';
+  return 'https://207.180.241.64:5000/api';
 };
 
 const API_URL = getApiUrl();
