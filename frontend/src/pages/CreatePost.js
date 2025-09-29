@@ -8,8 +8,7 @@ function CreatePost() {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    contact_info: '',
-    image: null
+    contact_info: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,17 +17,10 @@ function CreatePost() {
   const { user } = useAuth();
 
   const handleChange = (e) => {
-    if (e.target.type === 'file') {
-      setFormData({
-        ...formData,
-        image: e.target.files[0]
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [e.target.name]: e.target.value
-      });
-    }
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -56,11 +48,7 @@ function CreatePost() {
       return;
     }
 
-    if (formData.image && formData.image.size > 5000000) {
-      setError('Image size must be less than 5MB');
-      showError('Image size must be less than 5MB');
-      return;
-    }
+    // Image validation removed since uploads are disabled
 
     setLoading(true);
 

@@ -67,6 +67,9 @@ exports.handler = async (event, context) => {
     console.log('Proxying request to:', url + queryString);
     console.log('Method:', httpMethod);
     console.log('Headers:', backendHeaders);
+    console.log('Body type:', typeof body);
+    console.log('Body preview:', body ? body.substring(0, 100) : 'null');
+    console.log('Content-Type:', contentType);
 
     const response = await fetch(url + queryString, fetchOptions);
     const responseData = await response.text();
