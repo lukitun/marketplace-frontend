@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Connect directly to backend
+// Connect directly to backend (HTTP not HTTPS)
 const getApiUrl = () => {
-  return 'https://207.180.241.64:5000/api';
+  return 'http://207.180.241.64:5000/api';
 };
 
 const API_URL = getApiUrl();
