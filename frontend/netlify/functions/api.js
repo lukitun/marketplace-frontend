@@ -38,20 +38,33 @@ exports.handler = async (event, context) => {
         // Check if it's multipart form data
         if (decodedBody.includes('------WebKitFormBoundary') || decodedBody.includes('Content-Disposition: form-data')) {
           // Try to extract JSON from multipart
-          const lines = decodedBody.split('\n');
+          const lines = decodedBody.split('\r\n');
           let jsonData = {};
           let currentField = '';
-          let inField = false;
+          let collectingValue = false;
+          let fieldValue = [];
 
-          for (let line of lines) {
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
             if (line.includes('Content-Disposition: form-data; name="')) {
-              currentField = line.match(/name="([^"]+)"/)[1];
-              inField = true;
-            } else if (line.startsWith('------WebKitFormBoundary') && inField) {
-              inField = false;
+              const match = line.match(/name="([^"]+)"/);
+              if (match) {
+                currentField = match[1];
+                collectingValue = false;
+                fieldValue = [];
+              }
+            } else if (line === '' && currentField && !collectingValue) {
+              // Empty line after headers, next lines are the value
+              collectingValue = true;
+            } else if (collectingValue && line.startsWith('------WebKitFormBoundary')) {
+              // End of field value
+              jsonData[currentField] = fieldValue.join('\r\n').trim();
               currentField = '';
-            } else if (inField && line.trim() && !line.includes('Content-')) {
-              jsonData[currentField] = line.trim();
+              collectingValue = false;
+              fieldValue = [];
+            } else if (collectingValue) {
+              fieldValue.push(line);
             }
           }
 

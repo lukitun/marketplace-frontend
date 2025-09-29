@@ -54,11 +54,12 @@ function CreatePost() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} encType="application/json">
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Title*</label>
             <input
               type="text"
+              name="title"
               className="form-control"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -69,6 +70,7 @@ function CreatePost() {
           <div className="form-group">
             <label className="form-label">Content*</label>
             <textarea
+              name="content"
               className="form-control"
               rows="10"
               value={content}
@@ -80,6 +82,7 @@ function CreatePost() {
           <div className="form-group">
             <label className="form-label">Contact Information</label>
             <textarea
+              name="contact_info"
               className="form-control"
               rows="3"
               value={contactInfo}
