@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-// Connect directly to backend (HTTP not HTTPS)
 const getApiUrl = () => {
-  return 'http://207.180.241.64:5000/api';
+  return '/.netlify/functions/api';
 };
 
 const API_URL = getApiUrl();
@@ -54,10 +53,7 @@ export const authAPI = {
 export const postsAPI = {
   getAllPosts: (params) => api.get('/posts', { params }),
   getPost: (id) => api.get(`/posts/${id}`),
-  createPost: (postData) => {
-    // Always send as JSON (no image support for now)
-    return api.post('/posts', postData);
-  },
+  createPost: (postData) => api.post('/posts', postData),
   updatePost: (id, formData) => {
     // Check if formData is FormData or plain object
     if (formData instanceof FormData) {
