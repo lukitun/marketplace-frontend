@@ -1,5 +1,5 @@
 exports.handler = async (event, context) => {
-  const { httpMethod, path, body, queryStringParameters, headers } = event;
+  const { httpMethod, path, body, queryStringParameters, headers, isBase64Encoded } = event;
 
   // Handle CORS
   const corsHeaders = {
@@ -17,9 +17,6 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Dynamic import of fetch
-    const fetch = (await import('node-fetch')).default;
-
     // Use the correct backend port (5000)
     const API_BASE_URL = 'http://207.180.241.64:5000/api';
 
@@ -42,37 +39,93 @@ exports.handler = async (event, context) => {
 
     // Handle content-type
     const contentType = headers['content-type'] || headers['Content-Type'];
-    if (contentType) {
-      backendHeaders['Content-Type'] = contentType;
-    } else if (body && (httpMethod === 'POST' || httpMethod === 'PUT')) {
-      backendHeaders['Content-Type'] = 'application/json';
-    }
+
+    console.log('=== NETLIFY FUNCTION DEBUG ===');
+    console.log('Method:', httpMethod);
+    console.log('Path:', apiPath);
+    console.log('Content-Type:', contentType);
+    console.log('isBase64Encoded:', isBase64Encoded);
+    console.log('Body type:', typeof body);
+    console.log('Body length:', body ? body.length : 0);
+    console.log('Body preview:', body ? body.substring(0, 100) : 'null');
 
     // Make request to backend
     const fetchOptions = {
       method: httpMethod,
-      headers: backendHeaders,
+      headers: {
+        'Content-Type': 'application/json',
+        ...backendHeaders
+      },
     };
 
-    // Add body for POST/PUT requests
+    // Handle body for POST/PUT requests
     if (body && (httpMethod === 'POST' || httpMethod === 'PUT')) {
-      // Always handle as JSON for now (no image uploads)
-      fetchOptions.body = body;
-      // Ensure we're sending JSON
-      if (!contentType || contentType.includes('application/json')) {
-        backendHeaders['Content-Type'] = 'application/json';
+      let requestBody = body;
+
+      // If the body is base64 encoded, decode it first
+      if (isBase64Encoded) {
+        console.log('Decoding base64 body...');
+        try {
+          const decodedBuffer = Buffer.from(body, 'base64');
+          requestBody = decodedBuffer.toString('utf8');
+          console.log('Decoded body:', requestBody.substring(0, 200));
+        } catch (decodeError) {
+          console.error('Failed to decode base64:', decodeError);
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+              success: false,
+              message: 'Failed to decode request body',
+            }),
+          };
+        }
+      }
+
+      // For multipart form data, we need to parse it and convert to JSON
+      if (contentType && contentType.includes('multipart/form-data')) {
+        console.log('Processing multipart form data...');
+
+        // For now, return an error since we don't support file uploads
+        return {
+          statusCode: 400,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            success: false,
+            message: 'File uploads are not supported. Please create posts without images.',
+          }),
+        };
+      } else {
+        // Handle as JSON
+        try {
+          // Try to parse as JSON to validate
+          const parsedData = JSON.parse(requestBody);
+          fetchOptions.body = JSON.stringify(parsedData);
+          console.log('Sending JSON to backend:', fetchOptions.body);
+        } catch (jsonError) {
+          console.error('Invalid JSON in request body:', jsonError);
+          console.log('Raw body that failed parsing:', requestBody);
+          return {
+            statusCode: 400,
+            headers: corsHeaders,
+            body: JSON.stringify({
+              success: false,
+              message: 'Invalid JSON in request body',
+            }),
+          };
+        }
       }
     }
 
-    console.log('Proxying request to:', url + queryString);
-    console.log('Method:', httpMethod);
-    console.log('Headers:', backendHeaders);
-    console.log('Body type:', typeof body);
-    console.log('Body preview:', body ? body.substring(0, 100) : 'null');
-    console.log('Content-Type:', contentType);
+    console.log('Making request to:', url + queryString);
 
+    // Dynamic import of fetch
+    const fetch = (await import('node-fetch')).default;
     const response = await fetch(url + queryString, fetchOptions);
     const responseData = await response.text();
+
+    console.log('Backend response status:', response.status);
+    console.log('Backend response:', responseData.substring(0, 200));
 
     // Try to parse as JSON
     let responseBody;
@@ -92,7 +145,8 @@ exports.handler = async (event, context) => {
     };
 
   } catch (error) {
-    console.error('Proxy error:', error.message);
+    console.error('=== NETLIFY FUNCTION ERROR ===');
+    console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
 
     return {
@@ -104,7 +158,11 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         success: false,
         message: error.message || 'Server error',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        debug: {
+          type: typeof body,
+          isBase64: isBase64Encoded,
+          contentType: headers['content-type']
+        }
       }),
     };
   }
