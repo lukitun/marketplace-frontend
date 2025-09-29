@@ -23,8 +23,7 @@ function CreatePost() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError('');
 
     // Check if user is logged in
@@ -48,11 +47,9 @@ function CreatePost() {
       return;
     }
 
-    // Image validation removed since uploads are disabled
-
     setLoading(true);
 
-    // Since image upload is disabled, send as JSON
+    // Send as JSON
     const postData = {
       title: formData.title.trim(),
       content: formData.content.trim(),
@@ -60,7 +57,9 @@ function CreatePost() {
     };
 
     try {
+      console.log('Sending post data:', postData);
       const response = await postsAPI.createPost(postData);
+      console.log('Response:', response);
 
       if (response.data?.success) {
         showSuccess('Post created successfully!');
@@ -78,8 +77,6 @@ function CreatePost() {
         if (error.response.status === 401) {
           errorMessage = 'Your session has expired. Please log in again.';
           setTimeout(() => navigate('/login'), 2000);
-        } else if (error.response.status === 413) {
-          errorMessage = 'File size is too large. Please use a smaller image.';
         } else if (error.response.data?.message) {
           errorMessage = error.response.data.message;
         }
@@ -105,7 +102,7 @@ function CreatePost() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <div>
           <div className="form-group">
             <label className="form-label">Title*</label>
             <input
@@ -155,7 +152,6 @@ function CreatePost() {
               name="image"
               className="form-control"
               accept="image/*"
-              onChange={handleChange}
               disabled
               title="Image upload is temporarily disabled"
             />
@@ -164,9 +160,10 @@ function CreatePost() {
 
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button
-              type="submit"
+              type="button"
               className="btn btn-success"
               disabled={loading || !formData.title.trim() || !formData.content.trim()}
+              onClick={handleSubmit}
             >
               {loading ? 'Creating...' : 'Create Post'}
             </button>
@@ -178,7 +175,7 @@ function CreatePost() {
               Cancel
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
