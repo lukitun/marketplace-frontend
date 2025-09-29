@@ -64,16 +64,15 @@ function CreatePost() {
 
     setLoading(true);
 
-    const data = new FormData();
-    data.append('title', formData.title.trim());
-    data.append('content', formData.content.trim());
-    data.append('contact_info', formData.contact_info.trim() || '');
-    if (formData.image) {
-      data.append('image', formData.image);
-    }
+    // Since image upload is disabled, send as JSON
+    const postData = {
+      title: formData.title.trim(),
+      content: formData.content.trim(),
+      contact_info: formData.contact_info.trim() || ''
+    };
 
     try {
-      const response = await postsAPI.createPost(data);
+      const response = await postsAPI.createPost(postData);
 
       if (response.data?.success) {
         showSuccess('Post created successfully!');

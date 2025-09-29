@@ -59,19 +59,9 @@ export const authAPI = {
 export const postsAPI = {
   getAllPosts: (params) => api.get('/posts', { params }),
   getPost: (id) => api.get(`/posts/${id}`),
-  createPost: (formData) => {
-    // Check if formData is FormData or plain object
-    if (formData instanceof FormData) {
-      // Convert FormData to JSON for now (skip image)
-      const jsonData = {};
-      for (let [key, value] of formData.entries()) {
-        if (key !== 'image') {
-          jsonData[key] = value;
-        }
-      }
-      return api.post('/posts', jsonData);
-    }
-    return api.post('/posts', formData);
+  createPost: (postData) => {
+    // Always send as JSON (no image support for now)
+    return api.post('/posts', postData);
   },
   updatePost: (id, formData) => {
     // Check if formData is FormData or plain object

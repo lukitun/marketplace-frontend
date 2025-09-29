@@ -56,26 +56,11 @@ exports.handler = async (event, context) => {
 
     // Add body for POST/PUT requests
     if (body && (httpMethod === 'POST' || httpMethod === 'PUT')) {
-      // For multipart/form-data, we need special handling
-      if (contentType && contentType.includes('multipart/form-data')) {
-        // For now, posts without images - pass JSON
-        try {
-          const parsedBody = JSON.parse(body);
-          fetchOptions.body = body;
-          backendHeaders['Content-Type'] = 'application/json';
-        } catch (e) {
-          // If it's actual form data, we'll need to handle it differently
-          return {
-            statusCode: 400,
-            headers: corsHeaders,
-            body: JSON.stringify({
-              success: false,
-              message: 'Image upload is temporarily disabled. Please create posts without images.',
-            }),
-          };
-        }
-      } else {
-        fetchOptions.body = body;
+      // Always handle as JSON for now (no image uploads)
+      fetchOptions.body = body;
+      // Ensure we're sending JSON
+      if (!contentType || contentType.includes('application/json')) {
+        backendHeaders['Content-Type'] = 'application/json';
       }
     }
 
