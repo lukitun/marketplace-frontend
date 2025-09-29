@@ -28,7 +28,26 @@ exports.handler = async (event, context) => {
   }
 
   if (event.body) {
-    options.body = event.body;
+    // Handle base64 encoded bodies from Netlify
+    if (event.isBase64Encoded) {
+      const decodedBody = Buffer.from(event.body, 'base64').toString('utf-8');
+      // Check if it's multipart form data
+      if (decodedBody.includes('------WebKitFormBoundary')) {
+        // Extract JSON from multipart form data
+        // For now, just return an error for multipart
+        return {
+          statusCode: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ error: 'Multipart form data not supported. Please use JSON.' })
+        };
+      }
+      options.body = decodedBody;
+    } else {
+      options.body = event.body;
+    }
   }
 
   try {
